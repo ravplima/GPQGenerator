@@ -10,8 +10,8 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <h2>GenQuery</h2>
-        <p>SQL Visual Builder</p>
+        <h2>Pescador Fiscal</h2>
+        <p>Criador de malhas fiscais - SEFAZ/SE</p>
       </div>
 
       <div className="sidebar-section">

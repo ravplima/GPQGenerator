@@ -6,20 +6,19 @@ export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'error'
 
 interface MetadataStore {
   schemas: string[]
-  // schema → tables
-  tables: Record<string, TableMeta[]>
-  // "schema.table" → columns
-  columns: Record<string, ColumnMeta[]>
+  tables: Record<string, TableMeta[]>   // schema → tables
+  columns: Record<string, ColumnMeta[]> // "schema.table" → columns
 }
 
 interface MetadataContextValue {
   connection: ConnectionConfig | null
+  connectionId: string | null           // opaque session token from backend
   status: ConnectionStatus
   statusMessage: string
   store: MetadataStore
   loadingSchemas: boolean
-  loadingTables: string | null   // schema currently loading
-  loadingColumns: string | null  // "schema.table" currently loading
+  loadingTables: string | null
+  loadingColumns: string | null
 
   connect: (cfg: ConnectionConfig) => Promise<boolean>
   disconnect: () => void
@@ -30,6 +29,7 @@ interface MetadataContextValue {
 
 const MetadataContext = createContext<MetadataContextValue>({
   connection: null,
+  connectionId: null,
   status: 'idle',
   statusMessage: '',
   store: { schemas: [], tables: {}, columns: {} },
@@ -45,6 +45,7 @@ const MetadataContext = createContext<MetadataContextValue>({
 
 export function MetadataProvider({ children }: { children: React.ReactNode }) {
   const [connection, setConnection] = useState<ConnectionConfig | null>(null)
+  const [connectionId, setConnectionId] = useState<string | null>(null)
   const [status, setStatus] = useState<ConnectionStatus>('idle')
   const [statusMessage, setStatusMessage] = useState('')
   const [store, setStore] = useState<MetadataStore>({ schemas: [], tables: {}, columns: {} })
@@ -55,14 +56,25 @@ export function MetadataProvider({ children }: { children: React.ReactNode }) {
   const connect = useCallback(async (cfg: ConnectionConfig): Promise<boolean> => {
     setStatus('connecting')
     setStatusMessage('Testando conexão…')
-    const result = await api.testConnection(cfg)
-    if (!result.ok) {
+
+    // Quick connectivity check (no session stored)
+    const testResult = await api.testConnection(cfg)
+    if (!testResult.ok) {
       setStatus('error')
-      setStatusMessage(result.error ?? 'Falha na conexão')
+      setStatusMessage(testResult.error ?? 'Falha na conexão')
       return false
     }
-    await api.saveConnection(cfg)
+
+    // Create session on the backend — receives the connection_id token
+    const saveResult = await api.saveConnection(cfg)
+    if (!saveResult.ok || !saveResult.connection_id) {
+      setStatus('error')
+      setStatusMessage(saveResult.error ?? 'Erro ao criar sessão')
+      return false
+    }
+
     setConnection(cfg)
+    setConnectionId(saveResult.connection_id)
     setStatus('connected')
     setStatusMessage(`Conectado a ${cfg.database}@${cfg.host}`)
     setStore({ schemas: [], tables: {}, columns: {} })
@@ -70,52 +82,56 @@ export function MetadataProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const disconnect = useCallback(() => {
+    if (connectionId) {
+      api.deleteConnection(connectionId).catch(() => { /* best-effort */ })
+    }
     setConnection(null)
+    setConnectionId(null)
     setStatus('idle')
     setStatusMessage('')
     setStore({ schemas: [], tables: {}, columns: {} })
-  }, [])
+  }, [connectionId])
 
   const loadSchemas = useCallback(async () => {
-    if (status !== 'connected') return
+    if (status !== 'connected' || !connectionId) return
     setLoadingSchemas(true)
     try {
-      const schemas = await api.fetchSchemas()
+      const schemas = await api.fetchSchemas(connectionId)
       setStore(s => ({ ...s, schemas }))
     } finally {
       setLoadingSchemas(false)
     }
-  }, [status])
+  }, [status, connectionId])
 
   const loadTables = useCallback(async (schema: string) => {
-    if (status !== 'connected') return
-    if (store.tables[schema]) return // already cached
+    if (status !== 'connected' || !connectionId) return
+    if (store.tables[schema]) return
     setLoadingTables(schema)
     try {
-      const tables = await api.fetchTables(schema)
+      const tables = await api.fetchTables(schema, connectionId)
       setStore(s => ({ ...s, tables: { ...s.tables, [schema]: tables } }))
     } finally {
       setLoadingTables(null)
     }
-  }, [status, store.tables])
+  }, [status, connectionId, store.tables])
 
   const loadColumns = useCallback(async (schema: string, table: string): Promise<ColumnMeta[]> => {
     const key = `${schema}.${table}`
     if (store.columns[key]) return store.columns[key]
-    if (status !== 'connected') return []
+    if (status !== 'connected' || !connectionId) return []
     setLoadingColumns(key)
     try {
-      const columns = await api.fetchColumns(schema, table)
+      const columns = await api.fetchColumns(schema, table, connectionId)
       setStore(s => ({ ...s, columns: { ...s.columns, [key]: columns } }))
       return columns
     } finally {
       setLoadingColumns(null)
     }
-  }, [status, store.columns])
+  }, [status, connectionId, store.columns])
 
   return (
     <MetadataContext.Provider value={{
-      connection, status, statusMessage, store,
+      connection, connectionId, status, statusMessage, store,
       loadingSchemas, loadingTables, loadingColumns,
       connect, disconnect, loadSchemas, loadTables, loadColumns,
     }}>

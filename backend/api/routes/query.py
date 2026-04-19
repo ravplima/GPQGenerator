@@ -88,8 +88,9 @@ async def execute_query(
         col_meta: list[ColumnInfo] = []
         if cur.description:
             for desc in cur.description:
-                # desc.type_code is an OID (int) in psycopg3
-                col_meta.append(ColumnInfo(name=desc.name, type=str(desc.type_code)))
+                type_info = conn.adapters.types.get(desc.type_code)
+                type_name = type_info.name if type_info else str(desc.type_code)
+                col_meta.append(ColumnInfo(name=desc.name, type=type_name))
 
         # ── 5. Rows (bounded) ──────────────────────────────────
         raw_rows = await cur.fetchmany(MAX_ROWS)

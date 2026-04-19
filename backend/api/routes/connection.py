@@ -45,5 +45,5 @@ async def save_connection(config: ConnectionConfig) -> ConnectionResult:
 
 @router.delete("")
 async def disconnect(session: _Session = Depends(require_connection)) -> dict:
-    remove_session(session.connection_id)
+    await remove_session(session.connection_id)
     return {"ok": True}
