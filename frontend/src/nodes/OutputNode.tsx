@@ -54,8 +54,8 @@ export default function OutputNode({ id, selected }: NodeProps<OutputNode>) {
       {/* Header */}
       <div className="sql-node-header" style={{ background: '#1e3050', gap: 6 }}>
         <span className="sql-node-icon">📤</span>
-        <span className="sql-node-title">Output</span>
-        {ast && <span className="output-badge">genquery/v1</span>}
+        <span className="sql-node-title">Saída</span>
+        {ast && <span className="output-badge">GPQGenerator/v1</span>}
         <button
           className={`output-run-btn${running ? ' running' : ''}${!canExecute ? ' disabled' : ''}`}
           onClick={run}

@@ -11,7 +11,7 @@ export default function FilterNode({ data, selected }: NodeProps<FilterNode>) {
     <div className={`sql-node${selected ? ' selected' : ''}`}>
       <Handle type="target" position={Position.Left} id="input" />
       <div className="sql-node-header" style={{ background: '#b45309' }}>
-        <span className="sql-node-icon">🔺</span>
+        <span className="sql-node-icon">🔽</span>
         <span className="sql-node-title">Filter (WHERE)</span>
       </div>
       <div className="sql-node-body">

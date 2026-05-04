@@ -1,5 +1,5 @@
 """
-GenQuery backend — FastAPI application entry point.
+GPQGenerator backend — Entry point.
 
 Run with:
     uvicorn main:app --reload --host 0.0.0.0 --port 8000
@@ -17,9 +17,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.routes import connection, metadata, query
 
 app = FastAPI(
-    title="GenQuery API",
+    title="GPQGenerator API",
     version="1.0.0",
-    description="Safe SQL generation and execution from a visual AST for Greenplum / PostgreSQL",
+    description="API de geração de consultas SQL a partir de uma representação gráfica (GPQ) para malhas fiscais da SEFAZ/SE.",
 )
 
 # ── CORS ──────────────────────────────────────────────────────
@@ -46,4 +46,4 @@ app.include_router(query.router)
 
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok", "service": "genquery-backend"}
+    return {"status": "ok", "service": "gpqgenerator-backend"}

@@ -39,7 +39,7 @@ class _Session:
             user=c.username,
             password=c.password,
             connect_timeout=10,
-            application_name="genquery",
+            application_name="GPQGenerator",
         )
 
     async def get_pool(self) -> AsyncConnectionPool:

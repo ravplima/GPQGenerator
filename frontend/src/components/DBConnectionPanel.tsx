@@ -24,7 +24,7 @@ export default function DBConnectionPanel({ onClose }: Props) {
   const { status, statusMessage, store, connect, disconnect, loadSchemas } = useMetadata()
 
   const [form, setForm] = useState<ConnectionConfig>({
-    host: 'localhost',
+    host: 'gphml.sefaz.se.gov.br',
     port: 5432,
     database: '',
     username: '',
@@ -38,6 +38,7 @@ export default function DBConnectionPanel({ onClose }: Props) {
 
   async function handleConnect() {
     setTesting(true)
+    console.log(form)
     try {
       const ok = await connect(form)
       if (ok) await loadSchemas()

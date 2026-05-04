@@ -8,8 +8,6 @@ const JOIN_COLORS: Record<string, string> = {
   INNER: '#5b21b6',
   LEFT: '#6d28d9',
   RIGHT: '#7c3aed',
-  'FULL OUTER': '#8b5cf6',
-  CROSS: '#a78bfa',
 }
 
 export default function JoinNode({ data, selected }: NodeProps<JoinNode>) {

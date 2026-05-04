@@ -64,7 +64,7 @@ export interface SelectNodeData extends Record<string, unknown> {
 
 export interface JoinNodeData extends Record<string, unknown> {
   label: string
-  joinType: 'INNER' | 'LEFT' | 'RIGHT' | 'FULL OUTER' | 'CROSS'
+  joinType: 'INNER' | 'LEFT' | 'RIGHT'
   condition: string
 }
 
@@ -108,13 +108,13 @@ export const NODE_CATALOG: Array<{
   icon: string
   color: string
 }> = [
-  { type: 'table', label: 'Table Source', description: 'Tabela de origem', icon: '🗄️', color: '#2563eb' },
+  { type: 'table', label: 'Tabela', description: 'Tabela de origem', icon: '🗄️', color: '#2563eb' },
   { type: 'select', label: 'Select', description: 'Seleção de colunas', icon: '🔍', color: '#059669' },
   { type: 'join', label: 'Join', description: 'União de tabelas', icon: '🔗', color: '#7c3aed' },
-  { type: 'filter', label: 'Filter', description: 'Cláusula WHERE', icon: '🔺', color: '#d97706' },
+  { type: 'filter', label: 'Filter', description: 'Cláusula WHERE', icon: '🔽', color: '#d97706' },
   { type: 'groupBy', label: 'Group By', description: 'Agrupamento', icon: '📊', color: '#db2777' },
   { type: 'orderBy', label: 'Order By', description: 'Ordenação', icon: '↕️', color: '#0891b2' },
-  { type: 'output', label: 'Output', description: 'Resultado final', icon: '📤', color: '#475569' },
+  { type: 'output', label: 'Saída', description: 'Resultado final', icon: '📤', color: '#475569' },
 ]
 
 export const NODE_COLORS: Record<string, string> = {
@@ -168,7 +168,7 @@ export interface TableRefAST {
 }
 
 export interface JoinAST {
-  type: 'INNER' | 'LEFT' | 'RIGHT' | 'FULL OUTER' | 'CROSS'
+  type: 'INNER' | 'LEFT' | 'RIGHT'
   right: TableRefAST
   on: string
 }
@@ -181,7 +181,7 @@ export interface ConditionAST {
 }
 
 export interface QueryAST {
-  $schema: 'genquery/v1'
+  $schema: 'GPQGenerator/v1'
   type: 'SELECT'
   mpp: MPPConfig
   select: {

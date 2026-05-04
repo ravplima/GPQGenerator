@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, Query
 from api.deps import require_connection
 from core.db import _Session, open_cursor
 
-router = APIRouter(prefix="/api/metadata", tags=["metadata"])
+router = APIRouter(prefix="/api/metadata", tags=["Metadata"])
 
 
 @router.get("/schemas")

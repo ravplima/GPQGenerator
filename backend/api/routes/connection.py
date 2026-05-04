@@ -5,7 +5,7 @@ from api.deps import require_connection
 from core.db import _Session, create_session, remove_session
 from core.models import ConnectionConfig, ConnectionResult
 
-router = APIRouter(prefix="/api/connection", tags=["connection"])
+router = APIRouter(prefix="/api/connection", tags=["Connection"])
 
 
 @router.post("/test", response_model=ConnectionResult)

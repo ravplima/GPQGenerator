@@ -23,7 +23,7 @@ from core.db import _Session, open_cursor
 from core.models import ColumnInfo, QueryAST, QueryResult
 from core.sql_builder import build_sql, mpp_set_commands
 
-router = APIRouter(prefix="/api/query", tags=["query"])
+router = APIRouter(prefix="/api/query", tags=["Query"])
 
 MAX_ROWS = 10_000
 

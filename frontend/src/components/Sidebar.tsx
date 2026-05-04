@@ -10,7 +10,7 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <h2>Pescador Fiscal</h2>
+        <h1>Pescador Fiscal</h1>
         <p>Criador de malhas fiscais - SEFAZ/SE</p>
       </div>
 

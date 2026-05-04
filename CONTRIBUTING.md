@@ -1,6 +1,6 @@
-# Contributing to GenQuery
+# Contributing to GPQGenerator
 
-GenQuery is a visual, drag-and-drop SQL builder for Greenplum / PostgreSQL. The user assembles a query by connecting nodes on a canvas; the result is a typed JSON AST that the Python backend translates into safe, parameterised SQL and executes.
+GPQGenerator is a visual, drag-and-drop SQL builder for Greenplum / PostgreSQL. The user assembles a query by connecting nodes on a canvas; the result is a typed JSON AST that the Python backend translates into safe, parameterised SQL and executes.
 
 ---
 
@@ -24,12 +24,12 @@ GenQuery is a visual, drag-and-drop SQL builder for Greenplum / PostgreSQL. The 
 ## 1. Project Overview
 
 ```
-genquery/
+GPQGenerator/
 ├── frontend/   React + TypeScript + Vite  (canvas UI)
 └── backend/    Python + FastAPI            (SQL execution API)
 ```
 
-The frontend never constructs SQL strings. It produces a `genquery/v1` JSON AST that the backend receives, validates with Pydantic, and converts to SQL using `psycopg.sql.Identifier` — no string interpolation ever reaches the database.
+The frontend never constructs SQL strings. It produces a `GPQGenerator/v1` JSON AST that the backend receives, validates with Pydantic, and converts to SQL using `psycopg.sql.Identifier` — no string interpolation ever reaches the database.
 
 ---
 
@@ -377,14 +377,14 @@ For process supervision use `systemd` or a container. Example `systemd` unit:
 
 ```ini
 [Unit]
-Description=GenQuery Backend
+Description=GPQGenerator Backend
 After=network.target
 
 [Service]
-User=genquery
-WorkingDirectory=/opt/genquery/backend
+User=GPQGenerator
+WorkingDirectory=/opt/GPQGenerator/backend
 Environment=ALLOWED_ORIGINS=https://app.example.com
-ExecStart=/opt/genquery/backend/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8001 --workers 4
+ExecStart=/opt/GPQGenerator/backend/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8001 --workers 4
 Restart=always
 
 [Install]
@@ -406,7 +406,7 @@ server {
     listen 443 ssl;
     server_name app.example.com;
 
-    root /opt/genquery/frontend/dist;
+    root /opt/GPQGenerator/frontend/dist;
     index index.html;
 
     # SPA fallback

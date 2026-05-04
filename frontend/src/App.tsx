@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -43,7 +43,7 @@ const nodeTypes = {
 
 function defaultData(type: NodeType): Record<string, unknown> {
   switch (type) {
-    case 'table':   return { label: 'Table', tableName: 'my_table', schema: 'public', alias: 't', columns: [] }
+    case 'table':   return { label: 'Table', tableName: 'tabela', schema: 'DF', alias: 'tb', columns: [] }
     case 'select':  return { label: 'Select', columns: [], distinct: false }
     case 'join':    return { label: 'Join', joinType: 'INNER', condition: '' }
     case 'filter':  return { label: 'Filter', conditions: [] }
@@ -54,8 +54,38 @@ function defaultData(type: NodeType): Record<string, unknown> {
   }
 }
 
-const initialNodes: AppNode[] = []
-const initialEdges: Edge[] = []
+const STORAGE_KEY = 'malhapescador'
+const FILE_NAME = 'malhapescador.json'
+
+interface StoredFlow {
+  version: number
+  nodes: AppNode[]
+  edges: Edge[]
+  mppConfig: MPPConfig
+}
+
+function loadStored(): StoredFlow | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object') return null
+    return {
+      version: parsed.version ?? 1,
+      nodes: Array.isArray(parsed.nodes) ? parsed.nodes : [],
+      edges: Array.isArray(parsed.edges) ? parsed.edges : [],
+      mppConfig: parsed.mppConfig ?? DEFAULT_MPP_CONFIG,
+    }
+  } catch {
+    return null
+  }
+}
+
+const stored = loadStored()
+const initialNodes: AppNode[] = stored?.nodes ?? []
+const initialEdges: Edge[] = stored?.edges ?? []
+const initialMpp: MPPConfig = stored?.mppConfig ?? DEFAULT_MPP_CONFIG
 
 function Flow() {
   const [nodes, setNodes, onNodesChange] = useNodesState<AppNode>(initialNodes)
@@ -63,8 +93,9 @@ function Flow() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [showMPP, setShowMPP] = useState(false)
   const [showDB, setShowDB] = useState(false)
-  const [mppConfig, setMppConfig] = useState<MPPConfig>(DEFAULT_MPP_CONFIG)
+  const [mppConfig, setMppConfig] = useState<MPPConfig>(initialMpp)
   const reactFlowWrapper = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const { screenToFlowPosition } = useReactFlow()
 
   const selectedNode = nodes.find(n => n.id === selectedNodeId) ?? null
@@ -113,6 +144,56 @@ function Flow() {
     setSelectedNodeId(null)
   }, [setNodes, setEdges])
 
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      try {
+        const payload: StoredFlow = { version: 1, nodes, edges, mppConfig }
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
+      } catch {
+        // quota or serialization issue — ignore
+      }
+    }, 400)
+    return () => clearTimeout(handle)
+  }, [nodes, edges, mppConfig])
+
+  const handleSave = useCallback(() => {
+    const payload: StoredFlow = { version: 1, nodes, edges, mppConfig }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = FILE_NAME
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [nodes, edges, mppConfig])
+
+  const handleOpenClick = useCallback(() => {
+    fileInputRef.current?.click()
+  }, [])
+
+  const handleFileChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0]
+      event.target.value = ''
+      if (!file) return
+      const reader = new FileReader()
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(String(reader.result))
+          if (!parsed || typeof parsed !== 'object') throw new Error('payload inválido')
+          setNodes(Array.isArray(parsed.nodes) ? parsed.nodes : [])
+          setEdges(Array.isArray(parsed.edges) ? parsed.edges : [])
+          if (parsed.mppConfig) setMppConfig(parsed.mppConfig)
+          setSelectedNodeId(null)
+        } catch {
+          alert('Arquivo JSON inválido')
+        }
+      }
+      reader.readAsText(file)
+    },
+    [setNodes, setEdges],
+  )
+
   return (
     <MPPContext.Provider value={{ config: mppConfig, setConfig: setMppConfig }}>
       <div className="app">
@@ -133,7 +214,22 @@ function Flow() {
             >
               ⚡ MPP Config
             </button>
-            <button onClick={clearCanvas}>🗑️ Limpar</button>
+            <button onClick={handleSave}>
+              💾 Salvar
+            </button>
+            <button onClick={handleOpenClick}>
+              📂 Abrir Malha
+            </button>
+            <button onClick={clearCanvas}>
+              🗑️ Limpar
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/json,.json"
+              style={{ display: 'none' }}
+              onChange={handleFileChange}
+            />
           </div>
 
           <ReactFlow

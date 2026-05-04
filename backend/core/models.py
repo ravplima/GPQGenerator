@@ -1,5 +1,5 @@
 """
-Pydantic models that mirror the QueryAST produced by the frontend (genquery/v1).
+Pydantic models that mirror the QueryAST produced by the frontend (GPQgenerator/v1).
 """
 from __future__ import annotations
 
@@ -54,7 +54,7 @@ class TableRefAST(BaseModel):
 
 
 class JoinAST(BaseModel):
-    type: Literal["INNER", "LEFT", "RIGHT", "FULL OUTER", "CROSS"]
+    type: Literal["INNER", "LEFT", "RIGHT"]
     right: TableRefAST
     on: str
 
@@ -85,7 +85,7 @@ class OrderByClause(BaseModel):
 class QueryAST(BaseModel):
     model_config = {"populate_by_name": True}
 
-    schema_version: Literal["genquery/v1"] = Field(alias="$schema")
+    schema_version: Literal["GPQGenerator/v1"] = Field(alias="$schema")
     type: Literal["SELECT"]
     mpp: MPPConfig
     select: SelectClause

@@ -172,7 +172,7 @@ export function generateAST(
   const state = traverse(sources[0].sourceId, nodeMap, reverseEdges, new Set())
 
   return {
-    $schema: 'genquery/v1',
+    $schema: 'GPQGenerator/v1',
     type: 'SELECT',
     mpp,
     select: {

@@ -14,7 +14,7 @@ export default function TableNode({ data, selected }: NodeProps<TableNode>) {
     <div className={`sql-node${selected ? ' selected' : ''}`}>
       <div className="sql-node-header" style={{ background: '#1d4ed8' }}>
         <span className="sql-node-icon">🗄️</span>
-        <span className="sql-node-title">Table Source</span>
+        <span className="sql-node-title">Tabela</span>
       </div>
       <div className="sql-node-body">
         <div className="sql-node-field">

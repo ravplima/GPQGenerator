@@ -31,8 +31,6 @@ export function JoinProperties({
           <option value="INNER">INNER JOIN</option>
           <option value="LEFT">LEFT JOIN</option>
           <option value="RIGHT">RIGHT JOIN</option>
-          <option value="FULL OUTER">FULL OUTER JOIN</option>
-          <option value="CROSS">CROSS JOIN</option>
         </select>
       </Field>
 
